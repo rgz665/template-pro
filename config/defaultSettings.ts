@@ -23,7 +23,30 @@ const Settings: ProLayoutProps & {
       colorBgHeader: '#001529',
       colorBgRightActionsItemHover: '#262a3c',
       colorTextRightActionsItem: '#fff',
-      heightLayoutHeader: 48
+      heightLayoutHeader: 48,
+    },
+    sider: {
+      // colorBgCollapsedButton: 'yellow',
+      // colorTextCollapsedButtonHover: 'yellow',
+      // colorTextCollapsedButton: 'yellow',
+      colorMenuBackground: '#fff',
+      // colorBgMenuItemCollapsedHover: 'yellow',
+      // colorBgMenuItemCollapsedSelected: 'yellow',
+      // colorBgMenuItemCollapsedElevated: 'yellow',
+      // colorMenuItemDivider: 'yellow',
+      colorBgMenuItemHover: '#F3F7FF',
+      colorBgMenuItemSelected: '#F3F7FF',
+      colorTextMenuSelected: '#315EFB',
+      colorTextMenuItemHover: '#315EFB',
+      colorTextMenuActive: '#315EFB',
+      colorTextMenu: 'rgba(30, 28, 35, 0.8)',
+      // colorTextMenuSecondary: 'yellow',
+      // paddingInlineLayoutMenu: 10,
+      // paddingBlockLayoutMenu: 10,
+      
+      // menu 顶部 title 的字体颜色
+      colorTextMenuTitle: 'rgba(30, 28, 35, 0.8)',
+      colorTextSubMenuSelected: '#315EFB',
     },
   },
 };
