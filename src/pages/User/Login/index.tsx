@@ -1,4 +1,3 @@
-import Footer from '@/components/Footer';
 import { login } from '@/services/ant-design-pro/api';
 import { getFakeCaptcha } from '@/services/ant-design-pro/login';
 import {
@@ -18,7 +17,6 @@ import {
 import { useEmotionCss } from '@ant-design/use-emotion-css';
 import { FormattedMessage, history, SelectLang, useIntl, useModel, Helmet } from '@umijs/max';
 import { Alert, message, Tabs } from 'antd';
-import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
 
@@ -151,7 +149,6 @@ const Login: React.FC = () => {
             id: 'menu.login',
             defaultMessage: '登录页',
           })}
-          - {Settings.title}
         </title>
       </Helmet>
       <Lang />
@@ -363,7 +360,6 @@ const Login: React.FC = () => {
           </div>
         </LoginForm>
       </div>
-      <Footer />
     </div>
   );
 };
