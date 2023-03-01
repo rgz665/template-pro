@@ -1,14 +1,14 @@
 import HeaderWhiteLogo from '@/assets/logo_white.svg';
-import { Question, SelectLang } from '@/components/RightContent';
-import type { Settings as LayoutSettings } from '@ant-design/pro-components';
+import { Question } from '@/components/RightContent';
+import { Settings as LayoutSettings } from '@ant-design/pro-components';
 import type { RunTimeLayoutConfig } from '@umijs/max';
 import { history } from '@umijs/max';
 import defaultSettings from '../config/defaultSettings';
 import { AvatarDropdown, AvatarName } from './components/RightContent/AvatarDropdown';
-import { APP_CENTER } from './constants';
+import { APP_CENTER, APP_INDEX, LOCK_SCREEN_PATH, LOGIN_PATH, REQUEST_PREFIX } from './constants';
 import { errorConfig } from './requestErrorConfig';
-import { currentUser as queryCurrentUser } from './services/ant-design-pro/api';
-const loginPath = '/user/login';
+import { getBaseInfo } from './services';
+import { getAvatar, getLocalInfo, getLocalLockScreen, getToken, setLocalInfo } from './utils';
 
 import styles from './app.less';
 
@@ -22,19 +22,21 @@ export async function getInitialState(): Promise<{
   fetchUserInfo?: () => Promise<API.CurrentUser | undefined>;
 }> {
   const fetchUserInfo = async () => {
-    try {
-      const msg = await queryCurrentUser({
-        skipErrorHandler: true,
-      });
-      return msg.data;
-    } catch (error) {
-      history.push(loginPath);
+    let info;
+    const result = await getBaseInfo().catch(() => {
+      info = getLocalInfo();
+    });
+    const data = result?.data;
+    if (result?.code === 200 && data) {
+      info = {
+        ...data,
+      };
+      setLocalInfo(info);
+      return info;
     }
-    return undefined;
+    return info || getLocalInfo();
   };
-  // 如果不是登录页面，执行
-  const { location } = history;
-  if (location.pathname !== loginPath) {
+  if (getToken()) {
     const currentUser = await fetchUserInfo();
     return {
       fetchUserInfo,
@@ -49,19 +51,21 @@ export async function getInitialState(): Promise<{
 }
 
 // ProLayout 支持的api https://procomponents.ant.design/components/layout
-export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) => {
+export const layout: RunTimeLayoutConfig = ({ initialState }) => {
+  const { currentUser } = initialState || {};
   return {
-    actionsRender: () => [<Question key="doc" />, <SelectLang key="SelectLang" />],
+    actionsRender: () => [<Question key="doc" />],
     avatarProps: {
-      src: initialState?.currentUser?.avatar,
+      src: getAvatar(currentUser?.avatar),
       title: <AvatarName />,
       render: (_, avatarChildren) => {
-        return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
+        console.log('avatarChildren', avatarChildren);
+        return <AvatarDropdown menu>{avatarChildren}</AvatarDropdown>;
       },
     },
     // 水印
     // waterMarkProps: {
-    //   content: initialState?.currentUser?.name,
+    //   content: currentUser?.username,
     // },
     footerRender: false,
     headerTitleRender: (logo, title, props: any) => {
@@ -85,31 +89,22 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     },
     onPageChange: () => {
       const { location } = history;
-      // 如果没有登录，重定向到 login
-      if (!initialState?.currentUser && location.pathname !== loginPath) {
-        history.push(loginPath);
+      // 未登录 && 不是登录页面
+      if (!currentUser && ![LOGIN_PATH].includes(location.pathname)) {
+        const localScreenInfo = getLocalLockScreen();
+        const { username, isLock } = localScreenInfo || {};
+        // 有用户名缓存 && 锁屏状态 && 锁屏页面
+        if (username && isLock && [LOCK_SCREEN_PATH].includes(location.pathname)) {
+          history.push(LOCK_SCREEN_PATH);
+        } else {
+          history.push(LOGIN_PATH);
+        }
+      }
+      // 已登录 && 是登录页面
+      if (currentUser && [LOGIN_PATH].includes(location.pathname)) {
+        history.push(APP_INDEX);
       }
     },
-    layoutBgImgList: [
-      {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/D2LWSqNny4sAAAAAAAAAAAAAFl94AQBr',
-        left: 85,
-        bottom: 100,
-        height: '303px',
-      },
-      {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/C2TWRpJpiC0AAAAAAAAAAAAAFl94AQBr',
-        bottom: -68,
-        right: -45,
-        height: '303px',
-      },
-      {
-        src: 'https://mdn.alipayobjects.com/yuyan_qk0oxh/afts/img/F6vSTbj8KpYAAAAAAAAAAAAAFl94AQBr',
-        bottom: 0,
-        left: 0,
-        width: '331px',
-      },
-    ],
     menuHeaderRender: undefined,
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
@@ -128,5 +123,17 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const request = {
+  baseURL: REQUEST_PREFIX,
   ...errorConfig,
 };
+
+/**
+ * 不同路由切换，滚动条滚动到顶部
+ */
+let prePathname = '';
+export function onRouteChange({ location }: any) {
+  if (prePathname !== location?.pathname) {
+    prePathname = location?.pathname;
+    window.scrollTo(0, 0);
+  }
+}

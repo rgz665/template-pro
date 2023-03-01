@@ -12,25 +12,19 @@
  */
 export default [
   {
-    path: '/user',
+    path: '/',
     layout: false,
-    routes: [
-      {
-        name: 'login',
-        path: '/user/login',
-        component: './User/Login',
-      },
-    ],
+    component: './User/Login',
   },
   {
-    path: '/welcome',
-    name: 'welcome',
+    path: '/index',
+    name: '首页',
     icon: 'smile',
     component: './Welcome',
   },
   {
     path: '/admin',
-    name: 'admin',
+    name: '管理员',
     icon: 'crown',
     // access: 'canAdmin',
     routes: [
@@ -40,20 +34,16 @@ export default [
       },
       {
         path: '/admin/sub-page',
-        name: 'sub-page',
+        name: '配置权限',
         component: './Admin',
       },
     ],
   },
   {
-    name: 'list.table-list',
-    icon: 'table',
     path: '/list',
+    name: '高级列表',
+    icon: 'table',
     component: './TableList',
-  },
-  {
-    path: '/',
-    redirect: '/welcome',
   },
   {
     path: '*',
